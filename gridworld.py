@@ -29,6 +29,7 @@ class Tile:
 
     borderColor = pygame.Color('black')
     borderWidth = 4  # the pixel width of the tile border
+    image = pygame.image.load('marvin.jpg')
 
     def __init__(self, x, y, wall, surface, tile_size = (100,100)):
         # Initialize a tile to contain an image
@@ -40,16 +41,27 @@ class Tile:
 
         self.wall = wall
         self.origin = (x, y)
+        self.tile_coord = [x//100, y//100]
         self.surface = surface
         self.tile_size = tile_size
 
-    def draw(self):
+    def draw(self, pos, goal):
         # Draw the tile.
+
         rectangle = pygame.Rect(self.origin, self.tile_size)
         if self.wall:
             pygame.draw.rect(self.surface, pygame.Color('gray'), rectangle, 0)
+        elif goal == self.tile_coord:
+            pygame.draw.rect(self.surface, pygame.Color('green'), rectangle, 0)
         else:
             pygame.draw.rect(self.surface, pygame.Color('white'), rectangle, 0)
+
+        if pos == self.tile_coord:
+            self.surface.blit(Tile.image, self.origin)
+
+
+
+
         pygame.draw.rect(self.surface, Tile.borderColor, rectangle, Tile.borderWidth)
 
 
@@ -57,22 +69,31 @@ class Grid_World():
     # An object in this class represents a Grid_World game.
     tile_width = 100
     tile_height = 100
-    def __init__(self, surface, board_size = (6,9), wall_coords=[]):
+    def __init__(self, surface, board_size = (6,9), wall_coords=[], start_coord=(0,3), goal_coord=(5,8)):
         # Intialize a Grid_World game.
-        # - self is the Grid_World game
         # - surface is the pygame.Surface of the window
 
         self.surface = surface
         self.board = []
         self.bgColor = pygame.Color('black')
-        self.board_size = board_size
+        self.board_size = list(board_size)
         if not wall_coords:
             self.wall_coords = [[2,i] for i in range(board_size[1]-1)]
         else:
             self.wall_coords = wall_coords
 
+        self.start_coord = list(start_coord)
+        self.goal_coord = list(goal_coord)
+        self.position = list(start_coord)
+        self.actions = range(4)
+        self.board_position = self.find_board_coords(start_coord)
+
         self.createTiles()
 
+    def find_board_coords(self, pos):
+        x = pos[1]
+        y = self.board_size[0] - pos[0] -1
+        return [x,y]
 
     def createTiles(self):
         # Create the Tiles
@@ -94,11 +115,13 @@ class Grid_World():
     def draw(self):
         # Draw the tiles.
         # - self is the Grid_World game
-
+        pos = self.find_board_coords(self.position)
+        goal = self.find_board_coords(self.goal_coord)
+        print pos, goal
         self.surface.fill(self.bgColor)
         for row in self.board:
             for tile in row:
-                tile.draw()
+                tile.draw(pos, goal)
 
     def update(self):
         # Check if the game is over. If so return True.
@@ -106,11 +129,32 @@ class Grid_World():
         # and return False.
         # - self is the TTT game
 
-        if False:
+        if self.position == self.goal_coord:
             return True
         else:
+            #print self.position
+            #self.step(np.random.choice(range(4)))
             self.draw()
             return False
+
+    def step(self, action):
+        x,y = self.position
+        if action == 0:   # Action Up
+            if [x+1,y] not in self.wall_coords and x+1 < self.board_size[0]:
+                self.position = [x+1,y]
+
+        elif action == 1:   # Action Down
+            if [x-1,y] not in self.wall_coords and x-1 >= 0:
+                self.position = [x-1,y]
+
+        elif action == 2:   # Action Right
+            if [x,y+1] not in self.wall_coords and y+1 < self.board_size[1]:
+                self.position = [x,y+1]
+
+        else:   # Action Up
+            if [x,y-1] not in self.wall_coords and y-1 >= 0 :
+                self.position = [x,y-1]
+
 
 
 def main():
@@ -147,6 +191,8 @@ def main():
 
         # Update and draw objects for next frame
         gameOver = board.update()
+        if gameOver:
+            break
 
         # Refresh the display
         pygame.display.update()
