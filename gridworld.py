@@ -17,7 +17,11 @@
 import pygame, sys, time, random
 from pygame.locals import *
 import numpy as np
-
+action_dict = {'0': "Up",
+               '1': "Down",
+               '2': "Right",
+               '3': "Left",
+               }
 # User-defined classes
 
 class Tile:
@@ -74,14 +78,13 @@ class Grid_World():
         # - surface is the pygame.Surface of the window
 
         self.surface = surface
-        self.board = []
         self.bgColor = pygame.Color('black')
         self.board_size = list(board_size)
         if not wall_coords:
             self.wall_coords = [[2,i] for i in range(board_size[1]-1)]
         else:
             self.wall_coords = wall_coords
-        self.board_wall_coords = [[self.board_size[0]-x-1, y] for x,y in self.wall_coords]
+
 
         self.start_coord = list(start_coord)
         self.goal_coord = list(goal_coord)
@@ -89,7 +92,11 @@ class Grid_World():
         self.actions = range(4)
         self.reward = 0
 
+        self.calc_wall_coords()
         self.createTiles()
+
+    def calc_wall_coords(self):
+        self.board_wall_coords = [[self.board_size[0] - x - 1, y] for x, y in self.wall_coords]
 
     def find_board_coords(self, pos):
         x = pos[1]
@@ -99,6 +106,7 @@ class Grid_World():
     def createTiles(self):
         # Create the Tiles
         # - self is the Grid_World game
+        self.board = []
         for rowIndex in range(0, self.board_size[0]):
             row = []
             for columnIndex in range(0, self.board_size[1]):
@@ -132,30 +140,28 @@ class Grid_World():
         if self.position == self.goal_coord:
             return True
         else:
-            #print self.position
-            self.step(np.random.choice(range(4),p=[0.1,0.1,0.7,0.1]))
             self.draw()
             return False
 
     def step(self, action):
         x,y = self.position
         if action == 0:   # Action Up
-            print "Up"
+            # print "Up"
             if [x+1,y] not in self.wall_coords and x+1 < self.board_size[0]:
                 self.position = [x+1,y]
 
         elif action == 1:   # Action Down
-            print "Down"
+            # print "Down"
             if [x-1,y] not in self.wall_coords and x-1 >= 0:
                 self.position = [x-1,y]
 
         elif action == 2:   # Action Right
-            print "Right"
+            # print "Right"
             if [x,y+1] not in self.wall_coords and y+1 < self.board_size[1]:
                 self.position = [x,y+1]
 
-        else:   # Action Left
-            print "Left"
+        elif action == 3:   # Action Left
+            # print "Left"
             if [x,y-1] not in self.wall_coords and y-1 >= 0 :
                 self.position = [x,y-1]
 
@@ -164,7 +170,16 @@ class Grid_World():
             self.reward = 1
         else:
             self.reward = 0
-            self.reward = 0
+        #print action_dict[str(action)], self.position
+
+    def change_the_wall(self, wall_coords):
+        self.wall_coords = wall_coords
+        self.calc_wall_coords()
+        self.createTiles()
+
+    def change_the_goal(self, goal):
+        self.goal_coord = list(goal)
+
 
 
 if __name__ == "__main__":
