@@ -81,12 +81,13 @@ class Grid_World():
             self.wall_coords = [[2,i] for i in range(board_size[1]-1)]
         else:
             self.wall_coords = wall_coords
+        self.board_wall_coords = [[self.board_size[0]-x-1, y] for x,y in self.wall_coords]
 
         self.start_coord = list(start_coord)
         self.goal_coord = list(goal_coord)
         self.position = list(start_coord)
         self.actions = range(4)
-        self.board_position = self.find_board_coords(start_coord)
+        self.reward = 0
 
         self.createTiles()
 
@@ -104,7 +105,7 @@ class Grid_World():
                 imageIndex = rowIndex * self.board_size[1] + columnIndex
                 x = columnIndex * Grid_World.tile_width
                 y = rowIndex * Grid_World.tile_height
-                if [rowIndex,columnIndex] in self.wall_coords:
+                if [rowIndex,columnIndex] in self.board_wall_coords:
                     wall = True
                 else:
                     wall = False
@@ -117,7 +118,6 @@ class Grid_World():
         # - self is the Grid_World game
         pos = self.find_board_coords(self.position)
         goal = self.find_board_coords(self.goal_coord)
-        print pos, goal
         self.surface.fill(self.bgColor)
         for row in self.board:
             for tile in row:
@@ -133,38 +133,48 @@ class Grid_World():
             return True
         else:
             #print self.position
-            #self.step(np.random.choice(range(4)))
+            self.step(np.random.choice(range(4),p=[0.1,0.1,0.7,0.1]))
             self.draw()
             return False
 
     def step(self, action):
         x,y = self.position
         if action == 0:   # Action Up
+            print "Up"
             if [x+1,y] not in self.wall_coords and x+1 < self.board_size[0]:
                 self.position = [x+1,y]
 
         elif action == 1:   # Action Down
+            print "Down"
             if [x-1,y] not in self.wall_coords and x-1 >= 0:
                 self.position = [x-1,y]
 
         elif action == 2:   # Action Right
+            print "Right"
             if [x,y+1] not in self.wall_coords and y+1 < self.board_size[1]:
                 self.position = [x,y+1]
 
-        else:   # Action Up
+        else:   # Action Left
+            print "Left"
             if [x,y-1] not in self.wall_coords and y-1 >= 0 :
                 self.position = [x,y-1]
 
+        # Reward definition
+        if self.position == self.goal_coord:
+            self.reward = 1
+        else:
+            self.reward = 0
+            self.reward = 0
 
 
-def main():
+if __name__ == "__main__":
     # Initialize pygame
     pygame.init()
 
     # Set window size and title, and frame delay
     surfaceSize = (1000, 600)
     windowTitle = 'Grid_World'
-    pauseTime = 0.01  # smaller is faster game
+    pauseTime = 1  # smaller is faster game
 
     # Create the window
     surface = pygame.display.set_mode(surfaceSize, 0, 0)
@@ -201,4 +211,3 @@ def main():
         time.sleep(pauseTime)
 
 
-main()
