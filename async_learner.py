@@ -147,7 +147,7 @@ if __name__ == "__main__":
     pygame.display.set_caption(windowTitle)
 
     n = board_size[0]*board_size[1]
-    agent = Q_learning(alpha=0.75, gamma=0.95, lmbda=0.0, epsilon=0.1, n=n, num_actions=4)
+    agent = Q_learning(alpha=0.1, gamma=0.95, lmbda=0.0, epsilon=0.1, n=n, num_actions=4)
     actor_learner_threads = [myThread(thread_id, agent, surface) for thread_id in range(num_threads)]
 
     for t in actor_learner_threads:
