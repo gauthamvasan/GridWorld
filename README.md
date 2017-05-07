@@ -55,7 +55,7 @@ I tried getting it to learn within 1000 steps, but it happens quite rarely. A lo
 One additional thing I wanted to do was anneal the epsilon for the second obstacle. It starts at 0.5 which provides the much-needed exploration. But annealing the exploration factor epsilon would lead to better performance in terms of accumulated reward (something fairly straightforward to do). 
 
 ## Part 2 (Asynchronous q-learning)
-I've to figure out ways to make pygame work in parallel. It results in segmentation faults (core dumped). But that is not relevant to the task at hand. It used the module "threading". 
+I've to figure out ways to make pygame work in parallel. It results in segmentation faults (core dumped). But that is not relevant to the task at hand. It used the module "threading". Right now, it doesn't render the grid. But given some time, it can be fixed. But the state transitions still work without any issues.  
 
 ```python
 python async_learner.py
