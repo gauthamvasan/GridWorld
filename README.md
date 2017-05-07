@@ -84,6 +84,8 @@ There's a lot of things to try out here:
 * Parameter sweep
 * Real-time plotting tools using PyQt (super fast!), etc.
 
+## Unit testing
+Honestly, I've zero experience in that. I had to google how to do it before I started the coding test. It seems like something I can pick up pretty quick, but right now there are no automated tests inside. I just did some manual output checks each time I implemented/modified a function. 
    
 
 
