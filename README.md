@@ -11,8 +11,7 @@ To see what the testbed GUI looks like:
 python gridworld.py
 ```
 
-The coordinate frame within the GUI and the coordinate frame we normally use is quite different. Nevertheless, it has the standard coordinate frame. 
-For e.g., bottom-left corner is (0,0) and top-right corner is (n,n).
+The coordinate frame within the GUI and the coordinate frame we normally use are quite different. Nevertheless, I'm using the standard coordinate frame (i.e., bottom-left corner is (0,0) and top-right corner is (n,n) ).
  
 Arguments for the initializing the class:
 ```
