@@ -25,6 +25,8 @@ class Q_learning():
     def greedy_Q(self, features):
         q_vals = self.w[features,:]
         maxQ = np.max(q_vals)
+
+        # In the 1st epsiode, all actions can have the same Q-value. So a random action needs to be chosen
         if np.unique(q_vals).size == 1:
             greedy_action = np.random.choice(range(self.num_actions))
         else:
