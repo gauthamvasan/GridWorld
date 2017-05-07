@@ -51,6 +51,9 @@ class Q_learning():
             self.greedy = True
         return action
 
+    def async_delta_calc(self, reward):
+        return reward + self.gamma * self.next_q_value - self.q_value
+
     def master_func(self, current_features, next_features, reward, action):
         self.Q_value(current_features, action)
         self.Next_Q_value(next_features)

@@ -5,7 +5,12 @@ import pygame, sys, time, random
 from pygame.locals import *
 import threading
 
-num_episodes = 300
+T = 0
+T_max = 50000
+num_threads = 4
+I_async_update = 5
+
+num_episodes = 200
 board_size = [6,9]
 original_wall = [[2,i] for i in range(board_size[1]-1)]
 new_wall = [[2,i] for i in range(1,board_size[1])]
@@ -24,9 +29,9 @@ epsilon_anneal_rate = (1.0 - final_epsilon)/float(anneal_epsilon_episodes)
 def get_features(pos):
     return pos[0]*(board_size[1] - 1) + pos[1]
 
-def learner_thread(thread_id, agent, ):
-    # Initialize pygame
-    pygame.init()
+def learner_thread(thread_id, agent):
+    global T, T_max
+    t = 0
 
     # Set window size and title, and frame delay
     surfaceSize = (1000, 600)
@@ -36,23 +41,21 @@ def learner_thread(thread_id, agent, ):
     surface = pygame.display.set_mode(surfaceSize, 0, 0)
     pygame.display.set_caption(windowTitle)
 
-
-    n = board_size[0]*board_size[1]
-
-
     # Data storage initialization
     return_mem = []
     timestep_mem = []
     greedy_return_mem = []
     timesteps = 0
+    flag = 0
+    delta = 0
 
     # Loop forever
-    for i_episode in range(num_episodes):
+    while T < T_max:
         # create and initialize objects
         gameOver = False
         if timesteps >= transition_timestep:
             board = Grid_World(surface, board_size, new_wall)
-            agent.epsilon = 1.0
+            agent.epsilon = 0.5
         else:
             board = Grid_World(surface, board_size, original_wall)
 
@@ -67,7 +70,6 @@ def learner_thread(thread_id, agent, ):
         current_features = get_features(board.position)
         episode_return = 0
         episode_timesteps = 0
-
 
         while not gameOver:
             # Handle events
@@ -85,16 +87,22 @@ def learner_thread(thread_id, agent, ):
             next_features = get_features(next_state)
 
             # Q-learning update
-            agent.master_func(current_features, next_features, board.reward, action)
+            agent.Q_value(current_features, action)
+            agent.Next_Q_value(next_features)
+            delta += agent.async_calc_delta(board.reward)
+
 
             current_features = next_features
 
             episode_return += board.reward
             episode_timesteps += 1
             timesteps += 1
+            T += 1
+            t += 1
 
-            if timesteps >= transition_timestep:
-                board.change_the_wall(new_wall)
+            if timesteps >= transition_timestep and not flag:
+                flag = 1
+                break
 
             # print "Board position = ", board.position, " Action = ", action_dict[str(action)],\
             #    "Q-value = ", agent.q_value, "TD Error = ", agent.delta, "Timesteps = ", episode_timesteps
@@ -102,18 +110,42 @@ def learner_thread(thread_id, agent, ):
             # Update and draw objects for next frame
             gameOver = board.update()
 
+            if t % I_async_update == 0 or gameOver:
+                agent.delta = delta
+                agent.weight_update(features=current_features, action=action)
+                delta = 0
+
             # Refresh the display
             pygame.display.update()
 
             # Set the frame speed by pausing between frames
             time.sleep(pauseTime)
-        print "Episode ", i_episode+1, " ended in ", episode_timesteps, " timesteps and return = ", episode_return, \
+        print "Episode ", i_episode + 1, " ended in ", episode_timesteps, " timesteps and return = ", episode_return, \
             "Total Timesteps = ", timesteps
         return_mem.append(episode_return)
         timestep_mem.append(episode_timesteps)
-        #eval_return, eval_time = eval_policy(agent, surface)
-        #greedy_return_mem.append([eval_return, eval_time])
+        # eval_return, eval_time = eval_policy(agent, surface)
+        # greedy_return_mem.append([eval_return, eval_time])
+    np.savetxt('Episode_returns_'+str(thread_id), return_mem)
+    np.savetxt('Episode_time_'+str(thread_id), timestep_mem)
+    np.savetxt('weights_q_learner', agent.w)
 
 if __name__ == "__main__":
+    # Initialize pygame
+    pygame.init()
+
+    n = board_size[0]*board_size[1]
     agent = Q_learning(alpha=0.5, gamma=0.95, lmbda=0.0, epsilon=0.1, n=n, num_actions=4)
+    actor_learner_threads = [threading.Thread(target=learner_thread, args=(
+        thread_id, agent)) for thread_id in range(num_threads)]
+
+    for t in actor_learner_threads:
+        t.start()
+
+
+    for t in actor_learner_threads:
+        t.join()
+
+
+
 
