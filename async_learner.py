@@ -6,7 +6,7 @@ from pygame.locals import *
 import threading
 
 T = 0
-T_max = 50000
+T_max = 30000
 num_threads = 4
 I_async_update = 5
 
@@ -29,18 +29,21 @@ epsilon_anneal_rate = (1.0 - final_epsilon)/float(anneal_epsilon_episodes)
 def get_features(pos):
     return pos[0]*(board_size[1] - 1) + pos[1]
 
-def learner_thread(thread_id, agent):
+class myThread (threading.Thread):
+    def __init__(self, threadID, agent, surface):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.agent = agent
+        self.surface = surface
+    def run(self):
+        print "Starting " + str(self.threadID)
+        learner_thread(self.threadID, self.agent, self.surface)
+        print "Exiting " + str(self.threadID)
+
+
+def learner_thread(thread_id, agent, surface):
     global T, T_max
     t = 0
-
-    # Set window size and title, and frame delay
-    surfaceSize = (1000, 600)
-    windowTitle = 'Grid_World'
-
-    # Create the window
-    surface = pygame.display.set_mode(surfaceSize, 0, 0)
-    pygame.display.set_caption(windowTitle)
-
     # Data storage initialization
     return_mem = []
     timestep_mem = []
@@ -48,6 +51,8 @@ def learner_thread(thread_id, agent):
     timesteps = 0
     flag = 0
     delta = 0
+
+
 
     # Loop forever
     while T < T_max:
@@ -60,10 +65,10 @@ def learner_thread(thread_id, agent):
             board = Grid_World(surface, board_size, original_wall)
 
         # Draw objects
-        board.draw()
+        #board.draw()
 
         # Refresh the display
-        pygame.display.update()
+        #pygame.display.update()
 
         # Q learner specific initializations
         current_state = board.position
@@ -116,11 +121,11 @@ def learner_thread(thread_id, agent):
                 delta = 0
 
             # Refresh the display
-            pygame.display.update()
+            #pygame.display.update()
 
             # Set the frame speed by pausing between frames
             time.sleep(pauseTime)
-        print "Episode ", i_episode + 1, " ended in ", episode_timesteps, " timesteps and return = ", episode_return, \
+        print "Thread = ", thread_id, " Episode ended in ", episode_timesteps, " timesteps and return = ", episode_return, \
             "Total Timesteps = ", timesteps
         return_mem.append(episode_return)
         timestep_mem.append(episode_timesteps)
@@ -133,18 +138,23 @@ def learner_thread(thread_id, agent):
 if __name__ == "__main__":
     # Initialize pygame
     pygame.init()
+    # Set window size and title, and frame delay
+    surfaceSize = (1000, 600)
+    windowTitle = 'Grid_World'
+
+    # Create the window
+    surface = pygame.display.set_mode(surfaceSize, 0, 0)
+    pygame.display.set_caption(windowTitle)
 
     n = board_size[0]*board_size[1]
-    agent = Q_learning(alpha=0.5, gamma=0.95, lmbda=0.0, epsilon=0.1, n=n, num_actions=4)
-    actor_learner_threads = [threading.Thread(target=learner_thread, args=(
-        thread_id, agent)) for thread_id in range(num_threads)]
+    agent = Q_learning(alpha=0.75, gamma=0.95, lmbda=0.0, epsilon=0.1, n=n, num_actions=4)
+    actor_learner_threads = [myThread(thread_id, agent, surface) for thread_id in range(num_threads)]
 
     for t in actor_learner_threads:
         t.start()
 
 
-    for t in actor_learner_threads:
-        t.join()
+    print "Exiting main thread"
 
 
 
