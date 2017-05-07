@@ -8,13 +8,15 @@ python gridworld.py
 ```
 
 The coordinate frame within the GUI and the coordinate frame we normally use is quite different. Nevertheless, it has the standard coordinate frame. 
-For e.g., bottom-left corner is (0,0) and top-right corner is (n,n). 
+For e.g., bottom-left corner is (0,0) and top-right corner is (n,n).
+ 
 Arguments for the initializing the class:
+```
 board_size = (6,9)  :This is (num_rows,num_cols)
 wall_coords=[]  : List of 2D coordinates designating walls
 start_coord=(0,3) : starting point for the agent (coordinates in [0,board_size-1]) 
 goal_coord=(5,8) : terminal point for the agent (coordinates in [0,board_size-1]) 
-
+```
 ###Additional features of the grid:
 Can change the wall/obstacle coordinates at any point of time using the method calls:
 ```python
