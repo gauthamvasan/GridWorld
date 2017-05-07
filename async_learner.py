@@ -6,7 +6,7 @@ from pygame.locals import *
 import threading
 
 T = 0
-T_max = 30000
+T_max = 300000
 num_threads = 4
 I_async_update = 5
 
@@ -21,7 +21,7 @@ action_dict = {'0': "Up",
                '3': "Left",
                }
 render_env = False
-transition_timestep = 3000
+transition_timestep = 30000
 final_epsilon = 0.01
 anneal_epsilon_episodes = 10
 epsilon_anneal_rate = (1.0 - final_epsilon)/float(anneal_epsilon_episodes)

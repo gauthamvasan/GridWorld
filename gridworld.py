@@ -140,7 +140,7 @@ class Grid_World():
         if self.position == self.goal_coord:
             return True
         else:
-            #self.draw()
+            self.draw()
             return False
 
     def step(self, action):
