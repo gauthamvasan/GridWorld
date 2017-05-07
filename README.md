@@ -41,5 +41,14 @@ alpha=0.5, gamma=0.95, lmbda=0.0, epsilon=0.1, n=num_weights, num_actions=4
 ```
 These are the initial parameters of the learning algorithm. Once the obstacles are shifted (@3000 timesteps), epsilon is changes to 0.5.
 
+## Part 2 (Asynchronous q-learning)
+I've to figure out ways to make pygame work in parallel. But that is not relevant to the task at hand. 
+
+```python
+python async_learner.py
+```
+
+It hasn't worked yet. But from what I can see, the code is right. Maybe the right hyper-parameters are required.
+  
 
 
