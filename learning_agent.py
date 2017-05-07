@@ -4,19 +4,24 @@ from q_learner import Q_learning
 import pygame, sys, time, random
 from pygame.locals import *
 
-num_episodes = 1000
+num_episodes = 100
 board_size = [6,9]
 original_wall = [[2,i] for i in range(board_size[1]-1)]
 new_wall = [[2,i] for i in range(1,board_size[1])]
-pauseTime = 0.1  # smaller is faster game
+pauseTime = 0.01  # smaller is faster game
 action_dict = {'0': "Up",
                '1': "Down",
                '2': "Right",
                '3': "Left",
                }
+render_env = False
+transition_timestep = 100000
+final_epsilon = 0.01
+anneal_epsilon_episodes = 10
+epsilon_anneal_rate = (1.0 - final_epsilon)/float(anneal_epsilon_episodes)
 
 def get_features(pos):
-    return pos[0] * (board_size[1] - 1) + pos[1]
+    return pos[0]*(board_size[1] - 1) + pos[1]
 
 if __name__ == "__main__":
     # Initialize pygame
@@ -32,13 +37,22 @@ if __name__ == "__main__":
 
 
     n = board_size[0]*board_size[1]
-    agent = Q_learning(alpha=0.1, gamma=0.95, epsilon=0.5, n=n, num_actions=4)
+    agent = Q_learning(alpha=0.05, gamma=0.95, lmbda=0.0, epsilon=0.1, n=n, num_actions=4)
+
+    # Data storage initialization
+    return_mem = []
+    timestep_mem = []
+    greedy_return_mem = []
+    timesteps = 0
 
     # Loop forever
     for i_episode in range(num_episodes):
         # create and initialize objects
         gameOver = False
-        board = Grid_World(surface, board_size, original_wall)
+        if timesteps >= transition_timestep:
+            board = Grid_World(surface, board_size, new_wall)
+        else:
+            board = Grid_World(surface, board_size, original_wall)
 
         # Draw objects
         board.draw()
@@ -51,6 +65,7 @@ if __name__ == "__main__":
         current_features = get_features(board.position)
         episode_return = 0
         episode_timesteps = 0
+
 
         while not gameOver:
             # Handle events
@@ -74,9 +89,13 @@ if __name__ == "__main__":
 
             episode_return += board.reward
             episode_timesteps += 1
+            timesteps += 1
+
+            if timesteps >= transition_timestep:
+                board.change_the_wall(new_wall)
 
             print "Board position = ", board.position, " Action = ", action_dict[str(action)],\
-                "Q-value = ", agent.q_value, "TD Error = ", agent.delta
+               "Q-value = ", agent.q_value, "TD Error = ", agent.delta, "Timesteps = ", episode_timesteps
 
             # Update and draw objects for next frame
             gameOver = board.update()
@@ -86,4 +105,11 @@ if __name__ == "__main__":
 
             # Set the frame speed by pausing between frames
             time.sleep(pauseTime)
-        print "Episode ", i_episode, " ended in ", episode_timesteps, " timesteps and return = ", episode_return
+        print "Episode ", i_episode+1, " ended in ", episode_timesteps, " timesteps and return = ", episode_return, \
+            "Total Timesteps = ", timesteps
+        return_mem.append(episode_return)
+        timestep_mem.append(episode_timesteps)
+        #eval_return, eval_time = eval_policy(agent, surface)
+        #greedy_return_mem.append([eval_return, eval_time])
+
+
