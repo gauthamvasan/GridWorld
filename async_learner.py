@@ -3,8 +3,9 @@ from gridworld import Tile, Grid_World
 from q_learner import Q_learning
 import pygame, sys, time, random
 from pygame.locals import *
+import threading
 
-num_episodes = 200
+num_episodes = 300
 board_size = [6,9]
 original_wall = [[2,i] for i in range(board_size[1]-1)]
 new_wall = [[2,i] for i in range(1,board_size[1])]
@@ -23,7 +24,7 @@ epsilon_anneal_rate = (1.0 - final_epsilon)/float(anneal_epsilon_episodes)
 def get_features(pos):
     return pos[0]*(board_size[1] - 1) + pos[1]
 
-if __name__ == "__main__":
+def learner_thread(thread_id, agent, ):
     # Initialize pygame
     pygame.init()
 
@@ -37,14 +38,13 @@ if __name__ == "__main__":
 
 
     n = board_size[0]*board_size[1]
-    agent = Q_learning(alpha=0.5, gamma=0.95, lmbda=0.0, epsilon=0.1, n=n, num_actions=4)
+
 
     # Data storage initialization
     return_mem = []
     timestep_mem = []
     greedy_return_mem = []
     timesteps = 0
-    flag = 0
 
     # Loop forever
     for i_episode in range(num_episodes):
@@ -52,7 +52,7 @@ if __name__ == "__main__":
         gameOver = False
         if timesteps >= transition_timestep:
             board = Grid_World(surface, board_size, new_wall)
-            agent.epsilon = 0.5
+            agent.epsilon = 1.0
         else:
             board = Grid_World(surface, board_size, original_wall)
 
@@ -93,9 +93,8 @@ if __name__ == "__main__":
             episode_timesteps += 1
             timesteps += 1
 
-            if timesteps >= transition_timestep and not flag:
-                flag = 1
-                break
+            if timesteps >= transition_timestep:
+                board.change_the_wall(new_wall)
 
             # print "Board position = ", board.position, " Action = ", action_dict[str(action)],\
             #    "Q-value = ", agent.q_value, "TD Error = ", agent.delta, "Timesteps = ", episode_timesteps
@@ -114,9 +113,7 @@ if __name__ == "__main__":
         timestep_mem.append(episode_timesteps)
         #eval_return, eval_time = eval_policy(agent, surface)
         #greedy_return_mem.append([eval_return, eval_time])
-    np.savetxt('Episode_returns', return_mem)
-    np.savetxt('Episode_time', timestep_mem)
-    np.savetxt('weights_q_learner', agent.w)
 
-
+if __name__ == "__main__":
+    agent = Q_learning(alpha=0.5, gamma=0.95, lmbda=0.0, epsilon=0.1, n=n, num_actions=4)
 
