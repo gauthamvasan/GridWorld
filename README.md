@@ -1,6 +1,10 @@
 # GridWorld and Q-learning
 In this repo, I've created my own Gridworld testbed using pygame. It also contains python implementations of Q-learning. 
 
+## Requirements
+* Python 2.7
+* [Pygame](https://www.pygame.org/download.shtml)
+
 To see what the testbed GUI looks like:
 
 ```python
