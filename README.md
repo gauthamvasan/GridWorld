@@ -7,6 +7,8 @@ In this repo, I've created my own Gridworld testbed using pygame. It also contai
 
 To see what the testbed GUI looks like:
 
+## Grid World GUI 
+
 ```python
 python gridworld.py
 ```
@@ -20,6 +22,12 @@ wall_coords=[]  : List of 2D coordinates designating walls
 start_coord=(0,3) : starting point for the agent (coordinates in [0,board_size-1]) 
 goal_coord=(5,8) : terminal point for the agent (coordinates in [0,board_size-1]) 
 ```
+
+```
+reward = 0 everywhere except terminal state
+reward = 1 if at terminal state
+```
+
 ### Additional features of the grid
 Can change the wall/obstacle coordinates at any point of time using the method calls:
 ```python
